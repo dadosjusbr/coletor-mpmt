@@ -23,9 +23,6 @@ def _convert_file(file, output_path):
     Converte os arquivos ODS que estão corrompidos, para XLSX.
     """
     subprocess.run(
-        ["libreoffice", "--headless", "--invisible", "--convert-to", "xlsx", file]
-    )
-    subprocess.run(
         ["libreoffice", "--headless", "--invisible", "--convert-to", "xlsx", file],
         capture_output=True,
         text=True,
@@ -97,7 +94,7 @@ class Data_2018:
         self.month = month
         self.contracheque = contracheque
 
-    def validate_2018(self, output_path):
+    def validate(self, output_path):
         """
          Essa validação só leva em consideração o arquivo Membros Ativos-contracheque,
          pois até Julho de 2019 o MPSE não disponibiliza o arquivo Verbas Indenizatórias

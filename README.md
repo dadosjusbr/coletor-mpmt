@@ -15,7 +15,7 @@ O crawler está estruturado como uma CLI. Você passa dois argumentos (mês e an
 - Construção da imagem:
 
     ```sh
-    $ cd coletor-mpse
+    $ cd coletor-mpmt
     $ sudo docker build -t mpmt .
     ```
 
