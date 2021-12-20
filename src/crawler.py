@@ -26,8 +26,6 @@ def download(url, file_path):
     # Silence InsecureRequestWarning
     requests.urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
     try:
-        print(url)
-        print(file_path)
         response = requests.get(url, allow_redirects=True, verify=False)
         with open(file_path, "wb") as file:
             file.write(response.content)

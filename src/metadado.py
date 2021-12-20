@@ -34,5 +34,4 @@ def captura(mes, ano):
     else:
         metadado.outras_receitas = Coleta.Metadados.OpcoesDetalhamento.DETALHADO
 
-
     return metadado

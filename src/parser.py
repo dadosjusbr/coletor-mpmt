@@ -22,30 +22,23 @@ HEADERS = {
         "Retenção por Teto Constitucional": 15,
     },
     CONTRACHEQUE_2019_DEPOIS: {
-        "Remuneração do Cargo Efetivo": 6,
-        "Outras Verbas Remuneratórias, Legais ou Judiciais": 7,
-        "Função de Confiança ou Cargo em Comissão": 8,
-        "Gratificação Natalina": 9,
-        "Férias (1/3 constitucional)": 10,
-        "Abono de Permanência": 11,
-        "Outras Remunerações Temporárias": 12,
-        "Verbas indenizatórias": 13,
-        "Contribuição Previdenciária": 15,
-        "Imposto de Renda": 16,
-        "Retenção por Teto Constitucional": 17,
+        "Remuneração do Cargo Efetivo": 4,
+        "Outras Verbas Remuneratórias, Legais ou Judiciais": 5,
+        "Função de Confiança ou Cargo em Comissão": 6,
+        "Gratificação Natalina": 7,
+        "Férias (1/3 constitucional)": 8,
+        "Abono de Permanência": 9,
+        "Contribuição Previdenciária": 13,
+        "Imposto de Renda": 14,
+        "Retenção por Teto Constitucional": 15,
     },
     INDENIZACOES: {
-        "Auxílio": 4,
-        "Auxílio Creche": 5,
-        "Verbas Rescisórias": 6,
-        "Licença-Prêmio": 7,
-        "Abono Pecuniário": 8,
-        "Outras Verbas Indenizatórias": 9,
-        "Adicional de Insalubridade/Periculosidade": 10,
-        "Gratificação Exercício Cumulativo": 11,
-        "Gratificação Exercício Natureza Especial": 12,
-        "Substituição": 13,
-        "Outras Remunerações Temporárias": 14,
+        "Auxílio-Alimentação": 4,
+        "Auxílio-Creche": 5,
+        "Auxílio-Moradia": 6,
+        "Auxílio-Transporte": 7,
+        "Gratificação": 8,
+        "Outras Remunerações": 9,
     },
 }
 
@@ -54,28 +47,26 @@ def parse_employees(fn, chave_coleta, mes, ano):
     employees = {}
     counter = 1
     for row in fn:
-        if int(ano) == 2018 or (int(ano) == 2019 and int(mes) < 7):
-            funcao = row[5]
-            local_trabalho = row[4]
-        else:
-            funcao = row[4]
-            local_trabalho = row[5]
-      
-        matricula = str(row[2])
-        name = row[3]
-        if not is_nan(name) and name != "0":
+        matricula = str(row[0])
+        name = row[1]
+        funcao = row[2]
+        local_trabalho = row[3]
+        if not is_nan(name) and name != "0" and name != "Nome":
             membro = Coleta.ContraCheque()
             membro.id_contra_cheque = chave_coleta + "/" + str(counter)
             membro.chave_coleta = chave_coleta
-            membro.nome = name
+            membro.nome = str(name)
             membro.matricula = matricula
             membro.funcao = funcao
             membro.local_trabalho = local_trabalho
             membro.tipo = Coleta.ContraCheque.Tipo.Value("MEMBRO")
             membro.ativo = True
-            membro.remuneracoes.CopyFrom(
-                cria_remuneracao(row, CONTRACHEQUE_2018)
-            )
+            if int(ano) == 2018 or (int(ano) == 2019 and int(mes) < 7):
+                membro.remuneracoes.CopyFrom(cria_remuneracao(row, CONTRACHEQUE_2018))
+            else:
+                membro.remuneracoes.CopyFrom(
+                    cria_remuneracao(row, CONTRACHEQUE_2019_DEPOIS)
+                )
             employees[name] = membro
             counter += 1
     return employees
@@ -100,15 +91,15 @@ def cria_remuneracao(row, categoria):
             elif value in [13, 14, 15]:
                 remuneracao.valor = remuneracao.valor * (-1)
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("D")
-            elif value in [7, 8, 9, 10, 11, 12, 13]:
+            elif value in [5, 6, 7, 8, 9, 10, 11]:
                 remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
         elif categoria == CONTRACHEQUE_2019_DEPOIS:
-            if value == 6:
+            if value == 4:
                 remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("B")
-            elif value in [15, 16, 17]:
+            elif value in [13, 14, 15]:
                 remuneracao.valor = remuneracao.valor * (-1)
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("D")
-            elif value in [7, 8, 9, 10, 11, 12, 13]:
+            elif value in [5, 6, 7, 8, 9]:
                 remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
         else:
             remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
@@ -119,7 +110,7 @@ def cria_remuneracao(row, categoria):
 
 def update_employees(fn, employees, categoria):
     for row in fn:
-        name = row[1]
+        name = str(row[1]).rstrip()
         if name in employees.keys():
             emp = employees[name]
             remu = cria_remuneracao(row, categoria)
@@ -151,7 +142,9 @@ def parse(data, chave_coleta, mes, ano):
 
         except KeyError as e:
             sys.stderr.write(
-                "Registro inválido ao processar contracheque ou indenizações: {}".format(e)
+                "Registro inválido ao processar contracheque ou indenizações: {}".format(
+                    e
+                )
             )
             os._exit(1)
     for i in employees.values():
