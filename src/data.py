@@ -44,16 +44,51 @@ def load(file_names, year, month, output_path):
      :return um objeto Data() pronto para operar com os arquivos
     """
 
-    contracheque = _read(
-        _convert_file([c for c in file_names if "contracheque" in c][0], output_path)
-    )
     if int(year) == 2018 or (int(year) == 2019 and int(month) < 7):
         # Não existe dados exclusivos de verbas indenizatórias nesse período de tempo.
+        if not (
+            os.path.isfile(
+                output_path
+                + f"/membros-ativos-contracheque-{month}-{year}.xlsx"
+            )
+        ):
+            sys.stderr.write(f"Não existe planilha para {month}/{year}.")
+            sys.exit(STATUS_DATA_UNAVAILABLE)
+
+        contracheque = _read(
+            _convert_file([c for c in file_names if "contracheque" in c][0], output_path)
+        )
         return Data_2018(contracheque, year, month)
+
+    if not (
+        os.path.isfile(
+            output_path
+            + f"/membros-ativos-contracheque-{month}-{year}.xlsx"
+        )
+        or os.path.isfile(
+            output_path
+            + f"/membros-ativos-verbas-indenizatorias-{month}-{year}.xlsx"
+        )
+    ):
+        sys.stderr.write(f"Não existe planilhas para {month}/{year}.")
+        sys.exit(STATUS_DATA_UNAVAILABLE)
+    
+
+    contracheque = _read(
+            _convert_file([c for c in file_names if "contracheque" in c][0], output_path)
+        )
+
+    if len(contracheque) < 30:
+        sys.stderr.write(f"Planilha de contracheque vazia.")
+        sys.exit(STATUS_DATA_UNAVAILABLE)
 
     indenizatorias = _read(
         _convert_file([i for i in file_names if "indenizatorias" in i][0], output_path)
     )
+
+    if len(indenizatorias) < 30:
+        sys.stderr.write(f"Planilha de verbas indenizatórias vazia.")
+        sys.exit(STATUS_DATA_UNAVAILABLE)
 
     return Data(contracheque, indenizatorias, year, month)
 
@@ -65,46 +100,8 @@ class Data:
         self.contracheque = contracheque
         self.indenizatorias = indenizatorias
 
-    def validate(self, output_path):
-        """
-         Validação inicial dos arquivos passados como parâmetros.
-        Aborta a execução do script em caso de erro.
-         Caso o validade fique pare o script na leitura da planilha 
-        de controle de dados dara um erro retornando o codigo de erro 4,
-        esse codigo significa que não existe dados para a data pedida.
-        """
-
-        if not (
-            os.path.isfile(
-                output_path
-                + f"/membros-ativos-contracheque-{self.month}-{self.year}.xlsx"
-            )
-            or os.path.isfile(
-                output_path
-                + f"/membros-ativos-verbas-indenizatorias-{self.month}-{self.year}.xlsx"
-            )
-        ):
-            sys.stderr.write(f"Não existe planilhas para {self.month}/{self.year}.")
-            sys.exit(STATUS_DATA_UNAVAILABLE)
-
-
 class Data_2018:
     def __init__(self, contracheque, year, month):
         self.year = year
         self.month = month
         self.contracheque = contracheque
-
-    def validate(self, output_path):
-        """
-         Essa validação só leva em consideração o arquivo Membros Ativos-contracheque,
-         pois até Julho de 2019 o MPSE não disponibiliza o arquivo Verbas Indenizatórias
-        """
-
-        if not (
-            os.path.isfile(
-                output_path
-                + f"/membros-ativos-contracheque-{self.month}-{self.year}.xlsx"
-            )
-        ):
-            sys.stderr.write(f"Não existe planilha para {self.month}/{self.year}.")
-            sys.exit(STATUS_DATA_UNAVAILABLE)

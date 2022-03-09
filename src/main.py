@@ -66,11 +66,7 @@ def parse_execution(data, file_names):
 # Main execution
 def main():
     file_names = crawler.crawl(year, month, output_path)
-
     dados = data.load(file_names, year, month, output_path)
-
-    # Se não acontecer nada, é porque está tudo ok!
-    dados.validate(output_path)
 
     parse_execution(dados, file_names)
 
