@@ -126,7 +126,7 @@ def is_nan(string):
 def parse(data, chave_coleta, mes, ano):
     employees = {}
     folha = Coleta.FolhaDePagamento()
-    if int(ano) == 2018 or (int(ano) == 2019 and int(mes) < 7) or data.code == 2:
+    if int(ano) == 2018 or (int(ano) == 2019 and int(mes) < 7):
         try:
             employees.update(parse_employees(data.contracheque, chave_coleta, mes, ano))
 

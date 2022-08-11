@@ -59,7 +59,7 @@ def crawl(year, month, output_path):
         for element in urls_perks:
             pathlib.Path(output_path).mkdir(exist_ok=True)
             file_name_indemnity = (
-                "membros-ativos-verbas-indenizacoes-" + month + "-" + year + ".ods"
+                "membros-ativos-verbas-indenizatorias-" + month + "-" + year + ".ods"
             )
 
             file_path_indemnity = output_path + "/" + file_name_indemnity

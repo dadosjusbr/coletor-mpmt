@@ -15,7 +15,7 @@ def _read(file):
         return data
     except Exception as excep:
         print(f"Erro lendo as planilhas: {excep} : {file}", file=sys.stderr)
-        if 'indenizacoes' in file:
+        if 'verbas-indenizatorias' in file:
             pass
         else:
             sys.exit(STATUS_INVALID_FILE)
@@ -53,7 +53,7 @@ def load(file_names, year, month, output_path):
         )
         or os.path.isfile(
             output_path
-            + f"/membros-ativos-verbas-indenizacoes-{month}-{year}.ods"
+            + f"/membros-ativos-verbas-indenizatorias-{month}-{year}.ods"
         )
     ):
         sys.stderr.write(f"Não existe planilhas para {month}/{year}.")
@@ -68,7 +68,7 @@ def load(file_names, year, month, output_path):
 
     # Quando a planilha de indenizações não é disponibilizada pelo órgão, o coletor baixa um arquivo limpo 
     # e entende que a planilha existe, dando erro já dentro da função _read, perdendo os dados do contracheque.
-    indenizacoes = _read([i for i in file_names if "indenizacoes" in i][0])
+    indenizacoes = _read([i for i in file_names if "indenizatorias" in i][0])
     
     if 'NoneType' in str(type(indenizacoes)):
         return Data_2018(contracheque, year, month)
@@ -87,11 +87,9 @@ class Data:
         self.month = month
         self.contracheque = contracheque
         self.indenizacoes = indenizacoes
-        self.code = 1
 
 class Data_2018:
     def __init__(self, contracheque, year, month):
         self.year = year
         self.month = month
         self.contracheque = contracheque
-        self.code = 2
