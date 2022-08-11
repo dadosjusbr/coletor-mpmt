@@ -1,7 +1,7 @@
 from coleta import coleta_pb2 as Coleta
 
 
-def captura(mes, ano):
+def captura(mes, ano, temIndenizacao):
     metadado = Coleta.Metadados()
     metadado.nao_requer_login = True
     metadado.nao_requer_captcha = True
@@ -29,7 +29,7 @@ def captura(mes, ano):
     """
     metadado.receita_base = Coleta.Metadados.OpcoesDetalhamento.DETALHADO
     metadado.despesas = Coleta.Metadados.OpcoesDetalhamento.DETALHADO
-    if int(ano) == 2018 or (int(ano) == 2019 and int(mes) < 7):
+    if int(ano) == 2018 or (int(ano) == 2019 and int(mes) < 7) or temIndenizacao == False:
         metadado.outras_receitas = Coleta.Metadados.OpcoesDetalhamento.SUMARIZADO
     else:
         metadado.outras_receitas = Coleta.Metadados.OpcoesDetalhamento.DETALHADO

@@ -1,0 +1,64 @@
+{
+    "contraCheque": [
+        {
+            "idContraCheque": "mpmt/06/2022/1",
+            "chaveColeta": "mpmt/06/2022",
+            "nome": "ADALBERTO FERREIRA DE SOUZA JUNIOR",
+            "matricula": "1317",
+            "funcao": "PROMOTOR (A) DE JUSTICA ",
+            "localTrabalho": "2ª PROMOTORIA DE JUSTIÇA DE POCONÉ",
+            "ativo": true,
+            "remuneracoes": {
+                "remuneracao": [
+                    {
+                        "categoria": "contracheque",
+                        "item": "Remuneração do Cargo Efetivo",
+                        "valor": 33689.1
+                    },
+                    {
+                        "categoria": "contracheque",
+                        "item": "Outras Verbas Remuneratórias, Legais ou Judiciais",
+                        "tipoReceita": "O"
+                    },
+                    {
+                        "categoria": "contracheque",
+                        "item": "Função de Confiança ou Cargo em Comissão",
+                        "tipoReceita": "O"
+                    },
+                    {
+                        "categoria": "contracheque",
+                        "item": "Gratificação Natalina",
+                        "tipoReceita": "O"
+                    },
+                    {
+                        "categoria": "contracheque",
+                        "item": "Férias (1/3 constitucional)",
+                        "tipoReceita": "O"
+                    },
+                    {
+                        "categoria": "contracheque",
+                        "item": "Abono de Permanência",
+                        "tipoReceita": "O"
+                    },
+                    {
+                        "natureza": "D",
+                        "categoria": "contracheque",
+                        "item": "Contribuição Previdenciária",
+                        "valor": -4716.47
+                    },
+                    {
+                        "natureza": "D",
+                        "categoria": "contracheque",
+                        "item": "Imposto de Renda",
+                        "valor": -6993.84
+                    },
+                    {
+                        "natureza": "D",
+                        "categoria": "contracheque",
+                        "item": "Retenção por Teto Constitucional"
+                    }
+                ]
+            }
+        }
+    ]
+}

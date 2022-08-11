@@ -23,7 +23,7 @@ def _read(file):
 
 def load(file_names, year, month, output_path):
     """Carrega os arquivos passados como parâmetros.
-    
+
      :param file_names: slice contendo os arquivos baixados pelo coletor.
     Os nomes dos arquivos devem seguir uma convenção e começar com 
     Membros ativos-contracheque e Membros ativos-Verbas Indenizatorias
@@ -43,7 +43,7 @@ def load(file_names, year, month, output_path):
             sys.exit(STATUS_DATA_UNAVAILABLE)
 
         contracheque = _read([c for c in file_names if "contracheque" in c][0])
-    
+
         return Data_2018(contracheque, year, month)
 
     if not (
@@ -58,27 +58,24 @@ def load(file_names, year, month, output_path):
     ):
         sys.stderr.write(f"Não existe planilhas para {month}/{year}.")
         sys.exit(STATUS_DATA_UNAVAILABLE)
-    
 
     contracheque = _read([c for c in file_names if "contracheque" in c][0])
-        
-    if len(contracheque) < 30:
+
+    if len(contracheque) < 6:
         sys.stderr.write(f"Planilha de contracheque vazia.")
         sys.exit(STATUS_DATA_UNAVAILABLE)
 
-    # Quando a planilha de indenizações não é disponibilizada pelo órgão, o coletor baixa um arquivo limpo 
+    # Quando a planilha de indenizações não é disponibilizada pelo órgão, o coletor baixa um arquivo limpo
     # e entende que a planilha existe, dando erro já dentro da função _read, perdendo os dados do contracheque.
     indenizacoes = _read([i for i in file_names if "indenizatorias" in i][0])
-    
-    if 'NoneType' in str(type(indenizacoes)):
-        return Data_2018(contracheque, year, month)
-    
-    if len(indenizacoes) < 30:
-        sys.stderr.write(f"Planilha de verbas indenizatórias vazia.")
-        return Data_2018(contracheque, year, month)
-    return Data(contracheque, indenizacoes, year, month)
 
-    
+    if 'NoneType' in str(type(indenizacoes)):
+        return Data_Contracheque(contracheque, year, month)
+
+    if len(indenizacoes) < 6:
+        sys.stderr.write(f"Planilha de verbas indenizatórias vazia.")
+        return Data_Contracheque(contracheque, year, month)
+    return Data(contracheque, indenizacoes, year, month)
 
 
 class Data:
@@ -88,8 +85,29 @@ class Data:
         self.contracheque = contracheque
         self.indenizacoes = indenizacoes
 
+    # O método temIndenizacao verifica se o atributo "indenizacoes" está presente no objeto data.
+    # retornando True, se existir, ou False, se não existir.
+    def temIndenizacao(self):
+        return hasattr(self, 'indenizacoes')
+
+
 class Data_2018:
     def __init__(self, contracheque, year, month):
         self.year = year
         self.month = month
         self.contracheque = contracheque
+
+    def temIndenizacao(self):
+        return hasattr(self, 'indenizacoes')
+
+# Quando o órgão MPMT não disponibilizar as indenizações, o objeto data terá apenas o contracheque.
+
+
+class Data_Contracheque:
+    def __init__(self, contracheque, year, month):
+        self.year = year
+        self.month = month
+        self.contracheque = contracheque
+
+    def temIndenizacao(self):
+        return hasattr(self, 'indenizacoes')
