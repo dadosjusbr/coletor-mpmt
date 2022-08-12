@@ -14,10 +14,11 @@ def _read(file):
         data = pd.read_excel(file, engine="odf").to_numpy()
         return data
     except Exception as excep:
-        print(f"Erro lendo as planilhas: {excep} : {file}", file=sys.stderr)
         if 'verbas-indenizatorias' in file:
-            pass
+            data = None
+            return data
         else:
+            print(f"Erro lendo as planilhas: {excep} : {file}", file=sys.stderr)
             sys.exit(STATUS_INVALID_FILE)
 
 
@@ -69,12 +70,10 @@ def load(file_names, year, month, output_path):
     # e entende que a planilha existe, dando erro já dentro da função _read, perdendo os dados do contracheque.
     indenizacoes = _read([i for i in file_names if "indenizatorias" in i][0])
 
-    if 'NoneType' in str(type(indenizacoes)):
-        return Data_Contracheque(contracheque, year, month)
-
-    if len(indenizacoes) < 6:
+    if indenizacoes is None or len(indenizacoes) < 6:
         sys.stderr.write(f"Planilha de verbas indenizatórias vazia.")
-        return Data_Contracheque(contracheque, year, month)
+        indenizacoes = None
+        
     return Data(contracheque, indenizacoes, year, month)
 
 
@@ -85,25 +84,13 @@ class Data:
         self.contracheque = contracheque
         self.indenizacoes = indenizacoes
 
-    # O método temIndenizacao verifica se o atributo "indenizacoes" está presente no objeto data.
+    # O método temIndenizacao verifica se o atributo "indenizacoes" está presente no objeto data ou se está vazio.
     # retornando True, se existir, ou False, se não existir.
+    # Quando o órgão MPMT não disponibilizar as indenizações, o objeto data terá apenas o contracheque.
     def temIndenizacao(self):
-        return hasattr(self, 'indenizacoes')
-
+        return self.indenizacoes is not None
 
 class Data_2018:
-    def __init__(self, contracheque, year, month):
-        self.year = year
-        self.month = month
-        self.contracheque = contracheque
-
-    def temIndenizacao(self):
-        return hasattr(self, 'indenizacoes')
-
-# Quando o órgão MPMT não disponibilizar as indenizações, o objeto data terá apenas o contracheque.
-
-
-class Data_Contracheque:
     def __init__(self, contracheque, year, month):
         self.year = year
         self.month = month
