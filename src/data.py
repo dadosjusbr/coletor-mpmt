@@ -1,7 +1,7 @@
+
 import pandas as pd
 import sys
 import os
-import subprocess
 
 # Se for erro de não existir planilhas o retorno vai ser esse:
 STATUS_DATA_UNAVAILABLE = 4
@@ -11,32 +11,20 @@ STATUS_INVALID_FILE = 5
 
 def _read(file):
     try:
-        data = pd.read_excel(file, engine="openpyxl").to_numpy()
+        data = pd.read_excel(file, engine="odf").to_numpy()
+        return data
     except Exception as excep:
-        print(f"Erro lendo as planilhas: {excep}", file=sys.stderr)
-        sys.exit(STATUS_INVALID_FILE)
-    return data
-
-
-def _convert_file(file, output_path):
-    """
-    Converte os arquivos ODS que estão corrompidos, para XLSX.
-    """
-    subprocess.run(
-        ["libreoffice", "--headless", "--invisible", "--convert-to", "xlsx", file],
-        capture_output=True,
-        text=True,
-    )  # Pega a saída para não interferir no print dos dados
-    file_name = file.split(sep="/")[-1]
-    file_name = f'{file_name.split(sep=".")[0]}.xlsx'
-    # Move para o diretório passado por parâmetro
-    subprocess.run(["mv", file_name, f"{output_path}/{file_name}"])
-    return f"{output_path}/{file_name}"
+        if 'verbas-indenizatorias' in file:
+            data = None
+            return data
+        else:
+            print(f"Erro lendo as planilhas: {excep} : {file}", file=sys.stderr)
+            sys.exit(STATUS_INVALID_FILE)
 
 
 def load(file_names, year, month, output_path):
     """Carrega os arquivos passados como parâmetros.
-    
+
      :param file_names: slice contendo os arquivos baixados pelo coletor.
     Os nomes dos arquivos devem seguir uma convenção e começar com 
     Membros ativos-contracheque e Membros ativos-Verbas Indenizatorias
@@ -49,59 +37,64 @@ def load(file_names, year, month, output_path):
         if not (
             os.path.isfile(
                 output_path
-                + f"/membros-ativos-contracheque-{month}-{year}.xlsx"
+                + f"/membros-ativos-contracheque-{month}-{year}.ods"
             )
         ):
             sys.stderr.write(f"Não existe planilha para {month}/{year}.")
             sys.exit(STATUS_DATA_UNAVAILABLE)
 
-        contracheque = _read(
-            _convert_file([c for c in file_names if "contracheque" in c][0], output_path)
-        )
+        contracheque = _read([c for c in file_names if "contracheque" in c][0])
+
         return Data_2018(contracheque, year, month)
 
     if not (
         os.path.isfile(
             output_path
-            + f"/membros-ativos-contracheque-{month}-{year}.xlsx"
+            + f"/membros-ativos-contracheque-{month}-{year}.ods"
         )
         or os.path.isfile(
             output_path
-            + f"/membros-ativos-verbas-indenizatorias-{month}-{year}.xlsx"
+            + f"/membros-ativos-verbas-indenizatorias-{month}-{year}.ods"
         )
     ):
         sys.stderr.write(f"Não existe planilhas para {month}/{year}.")
         sys.exit(STATUS_DATA_UNAVAILABLE)
-    
 
-    contracheque = _read(
-            _convert_file([c for c in file_names if "contracheque" in c][0], output_path)
-        )
+    contracheque = _read([c for c in file_names if "contracheque" in c][0])
 
-    if len(contracheque) < 30:
+    if len(contracheque) < 6:
         sys.stderr.write(f"Planilha de contracheque vazia.")
         sys.exit(STATUS_DATA_UNAVAILABLE)
 
-    indenizatorias = _read(
-        _convert_file([i for i in file_names if "indenizatorias" in i][0], output_path)
-    )
+    # Quando a planilha de indenizações não é disponibilizada pelo órgão, o coletor baixa um arquivo limpo
+    # e entende que a planilha existe, dando erro já dentro da função _read, perdendo os dados do contracheque.
+    indenizacoes = _read([i for i in file_names if "indenizatorias" in i][0])
 
-    if len(indenizatorias) < 30:
+    if indenizacoes is None or len(indenizacoes) < 6:
         sys.stderr.write(f"Planilha de verbas indenizatórias vazia.")
-        sys.exit(STATUS_DATA_UNAVAILABLE)
-
-    return Data(contracheque, indenizatorias, year, month)
+        indenizacoes = None
+        
+    return Data(contracheque, indenizacoes, year, month)
 
 
 class Data:
-    def __init__(self, contracheque, indenizatorias, year, month):
+    def __init__(self, contracheque, indenizacoes, year, month):
         self.year = year
         self.month = month
         self.contracheque = contracheque
-        self.indenizatorias = indenizatorias
+        self.indenizacoes = indenizacoes
+
+    # O método temIndenizacao verifica se o atributo "indenizacoes" está presente no objeto data ou se está vazio.
+    # retornando True, se existir, ou False, se não existir.
+    # Quando o órgão MPMT não disponibilizar as indenizações, o objeto data terá apenas o contracheque.
+    def temIndenizacao(self):
+        return self.indenizacoes is not None
 
 class Data_2018:
     def __init__(self, contracheque, year, month):
         self.year = year
         self.month = month
         self.contracheque = contracheque
+
+    def temIndenizacao(self):
+        return hasattr(self, 'indenizacoes')

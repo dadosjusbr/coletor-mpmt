@@ -62,7 +62,8 @@ def parse_employees(fn, chave_coleta, mes, ano):
             membro.tipo = Coleta.ContraCheque.Tipo.Value("MEMBRO")
             membro.ativo = True
             if int(ano) == 2018 or (int(ano) == 2019 and int(mes) < 7):
-                membro.remuneracoes.CopyFrom(cria_remuneracao(row, CONTRACHEQUE_2018))
+                membro.remuneracoes.CopyFrom(
+                    cria_remuneracao(row, CONTRACHEQUE_2018))
             else:
                 membro.remuneracoes.CopyFrom(
                     cria_remuneracao(row, CONTRACHEQUE_2019_DEPOIS)
@@ -87,22 +88,27 @@ def cria_remuneracao(row, categoria):
         remuneracao.valor = format_value(row[value])
         if categoria == CONTRACHEQUE_2018:
             if value == 4:
-                remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("B")
+                remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value(
+                    "B")
             elif value in [13, 14, 15]:
                 remuneracao.valor = remuneracao.valor * (-1)
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("D")
             elif value in [5, 6, 7, 8, 9, 10, 11]:
-                remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
+                remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value(
+                    "O")
         elif categoria == CONTRACHEQUE_2019_DEPOIS:
             if value == 4:
-                remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("B")
+                remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value(
+                    "B")
             elif value in [13, 14, 15]:
                 remuneracao.valor = remuneracao.valor * (-1)
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("D")
             elif value in [5, 6, 7, 8, 9]:
-                remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
+                remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value(
+                    "O")
         else:
-            remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
+            remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value(
+                "O")
 
         remu_array.remuneracao.append(remuneracao)
     return remu_array
@@ -123,12 +129,13 @@ def is_nan(string):
     return string != string
 
 
-def parse(data, chave_coleta, mes, ano):
+def parse(data, chave_coleta, mes, ano, temIndenizacao):
     employees = {}
     folha = Coleta.FolhaDePagamento()
-    if int(ano) == 2018 or (int(ano) == 2019 and int(mes) < 7):
+    if int(ano) == 2018 or (int(ano) == 2019 and int(mes) < 7) or temIndenizacao == False:
         try:
-            employees.update(parse_employees(data.contracheque, chave_coleta, mes, ano))
+            employees.update(parse_employees(
+                data.contracheque, chave_coleta, mes, ano))
 
         except KeyError as e:
             sys.stderr.write(
@@ -137,8 +144,9 @@ def parse(data, chave_coleta, mes, ano):
             os._exit(1)
     else:
         try:
-            employees.update(parse_employees(data.contracheque, chave_coleta, mes, ano))
-            update_employees(data.indenizatorias, employees, INDENIZACOES)
+            employees.update(parse_employees(
+                data.contracheque, chave_coleta, mes, ano))
+            update_employees(data.indenizacoes, employees, INDENIZACOES)
 
         except KeyError as e:
             sys.stderr.write(

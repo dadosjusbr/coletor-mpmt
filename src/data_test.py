@@ -2,8 +2,8 @@ from data import load
 import unittest
 
 file_names = [
-    "src/output_test/sheets/membros-ativos-contracheque-07-2019.xlsx",
-    "src/output_test/sheets/membros-ativos-verbas-indenizatorias-07-2019.xlsx",
+    "src/output_test/sheets/membros-ativos-contracheque-07-2019.ods",
+    "src/output_test/sheets/membros-ativos-verbas-indenizatorias-07-2019.ods",
 ]
 
 
