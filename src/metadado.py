@@ -3,8 +3,6 @@ from coleta import coleta_pb2 as Coleta
 
 def captura(mes, ano, temIndenizacao):
     metadado = Coleta.Metadados()
-    metadado.nao_requer_login = True
-    metadado.nao_requer_captcha = True
     metadado.acesso = Coleta.Metadados.FormaDeAcesso.ACESSO_DIRETO
     metadado.extensao = Coleta.Metadados.Extensao.ODS
     metadado.estritamente_tabular = False
