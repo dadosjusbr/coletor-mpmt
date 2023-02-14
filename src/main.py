@@ -27,8 +27,8 @@ if "OUTPUT_FOLDER" in os.environ:
 else:
     output_path = "./output"
 
-if "GIT_COMMIT" in os.environ:
-    crawler_version = os.environ["GIT_COMMIT"]
+if "CRAWLER_VERSION" in os.environ:
+    crawler_version = os.environ["CRAWLER_VERSION"]
 else:
     crawler_version = "unspecified"
 
